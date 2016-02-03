@@ -19,23 +19,35 @@ var Vec4 = require( 'osg/Vec4' );
  */
 var RenderStage = function () {
     RenderBin.call( this );
-    this.positionedAttribute = [];
-    this.clearDepth = 1.0;
-    this.clearColor = Vec4.createAndSet( 0.0, 0.0, 0.0, 1.0 );
-    /*jshint bitwise: false */
-    this.clearMask = Camera.COLOR_BUFFER_BIT | Camera.DEPTH_BUFFER_BIT;
-    /*jshint bitwise: true */
-    this.camera = undefined;
-    this.viewport = undefined;
+    this.clearColor = Vec4.create();
     this.preRenderList = [];
     this.postRenderList = [];
-    this._renderStage = this;
+    RenderStage.prototype.init.call( this );
 };
 
 RenderStage.prototype = MACROUTILS.objectLibraryClass( MACROUTILS.objectInherit( RenderBin.prototype, {
 
     // temporary, Utils.createPrototypeClass will solve this
     constructor: RenderStage,
+
+
+    init: function () {
+
+        RenderBin.prototype.init.call( this );
+        this.positionedAttribute.length = 0;
+        this.clearDepth = 1.0;
+        Vec4.set( 0.0, 0.0, 0.0, 1.0, this.clearColor );
+        /*jshint bitwise: false */
+        this.clearMask = Camera.COLOR_BUFFER_BIT | Camera.DEPTH_BUFFER_BIT;
+        /*jshint bitwise: true */
+        this.camera = undefined;
+        this.viewport = undefined;
+        this.preRenderList.length = 0;
+        this.postRenderList.length = 0;
+        this._renderStage = this;
+
+        return this;
+    },
 
     reset: function () {
         RenderBin.prototype.reset.call( this );
@@ -273,5 +285,6 @@ RenderStage.prototype = MACROUTILS.objectLibraryClass( MACROUTILS.objectInherit(
         return previousLeaf;
     }
 } ), 'osg', 'RenderStage' );
+
 
 module.exports = RenderStage;

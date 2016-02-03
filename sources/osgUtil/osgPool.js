@@ -15,20 +15,38 @@ osgPool.memoryPools = {};
 osgPool.OsgObjectMemoryPool = function ( ObjectClassName ) {
     return {
         _memPool: [],
+        _memPoolAway: [],
         reset: function () {
             this._memPool = [];
+            this._memPoolAway = [];
+            return this;
+        },
+        recycle: function () {
+            for ( var i = 0, l = this._memPoolAway.length; i < l; i++ ) {
+                this._memPool.push( this._memPoolAway[ i ] );
+            }
             return this;
         },
         put: function ( obj ) {
+            this._memPoolAway.splice( this._memPoolAway.indexOf( obj ), 1 );
             this._memPool.push( obj );
         },
         get: function () {
-            if ( this._memPool.length > 0 ) return this._memPool.pop();
+            if ( this._memPool.length > 0 ) {
+                var obj = this._memPool.pop();
+                this._memPoolAway.push( obj );
+                return obj;
+            }
             this.grow();
             return this.get();
         },
-        grow: function ( sizeAdd ) {
-            if ( sizeAdd === undefined ) sizeAdd = ( this._memPool.length > 0 ) ? this._memPool.length * 2 : 20;
+        grow: function ( sizeAddParam ) {
+            var sizeAdd;
+            if ( sizeAddParam === undefined ) {
+                sizeAdd = ( this._memPool.length > 0 ) ? this._memPool.length * 2 : 20;
+            } else {
+                sizeAdd = sizeAddParam;
+            }
             var i = this._memPool.length;
             while ( i++ < sizeAdd ) this._memPool.push( new ObjectClassName() );
             return this;
