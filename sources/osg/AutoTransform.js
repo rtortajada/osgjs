@@ -38,6 +38,7 @@ var AutoTransform = function () {
     this._previousProjection = mat4.create();
     this._previousModelView = mat4.create();
     this._previousPosition = vec3.create();
+    this._previousModelView = mat4.create();
 };
 
 /** @lends Autotransform.prototype */
