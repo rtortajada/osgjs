@@ -133,6 +133,7 @@ utils.createPrototypeObject(
 
         invalidate: function() {
             this._buffer = undefined;
+            this._elements = undefined;
             this.dirty();
         },
 
