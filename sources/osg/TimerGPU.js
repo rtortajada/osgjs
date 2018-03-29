@@ -19,14 +19,15 @@ var TimerGPU = function(gl) {
 
 TimerGPU.FRAME_COUNT = 0;
 
+TimerGPU._instance = new Map();
+
 TimerGPU.instance = function(gl, force) {
-    if (!TimerGPU._instance) {
-        TimerGPU._instance = new TimerGPU(gl);
-    } else if (gl && (TimerGPU._instance.getContext() !== gl || force)) {
-        TimerGPU._instance.setContext(gl);
-        TimerGPU._instance.reset(gl);
+    if (!TimerGPU._instance.has(gl)) {
+        TimerGPU._instance.set(gl, new TimerGPU(gl));
+    } else if (gl && force) {
+        TimerGPU._instance.get(gl).reset(gl);
     }
-    return TimerGPU._instance;
+    return TimerGPU._instance.get(gl);
 };
 
 TimerGPU.prototype = {
