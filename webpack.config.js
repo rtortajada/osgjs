@@ -78,7 +78,7 @@ var mainlibConfig = {
             }
         ]
     },
-    devtool: 'eval',
+    devtool: 'source-map',
     plugins: [
         new webpack.BannerPlugin(
             ['OSGJS', 'Cedric Pinson <trigrou@trigrou.com> (http://cedricpinson.com)'].join('\n')
