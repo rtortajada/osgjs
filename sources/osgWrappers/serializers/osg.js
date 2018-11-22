@@ -226,10 +226,12 @@ osgWrapper.Texture = function(input, texture) {
         file = 'no-image-provided';
     }
 
-    return input.readImageURL(file).then(function(img) {
-        texture.setImage(img);
-        return texture;
-    });
+    return new P(function (resolve) {
+        input.readImageURL(file).then(function(img) {
+            texture.setImage(img);
+            resolve( texture );
+        });
+    } );
 };
 
 osgWrapper.Projection = function(input, node) {
