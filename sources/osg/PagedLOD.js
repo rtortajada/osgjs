@@ -18,6 +18,7 @@ var PagedLOD = function() {
     this._frameNumberOfLastTraversal = 0;
     this._databasePath = '';
     this._numChildrenThatCannotBeExpired = 0;
+    this._databaseOptions = undefined;
 };
 
 /**
@@ -131,6 +132,12 @@ utils.createPrototypeNode(
                     this._perRangeDataList[i].dbrequest._groupExpired = true;
                 }
             }
+        },
+        setDatabaseOptions: function(databaseOptions) {
+            this._databaseOptions = databaseOptions;
+        },
+        getDatabaseOptions: function() {
+            return this._databaseOptions;
         },
 
         traverse: (function() {
@@ -246,7 +253,8 @@ utils.createPrototypeNode(
                                             this._perRangeDataList[numChildren].filename,
                                         group,
                                         visitor.getFrameStamp().getSimulationTime(),
-                                        priority
+                                        priority,
+                                        this._databaseOptions
                                     );
                                 } else {
                                     // Update timestamp of the request.
