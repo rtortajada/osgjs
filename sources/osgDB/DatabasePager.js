@@ -148,6 +148,7 @@ var DatabaseRequest = function() {
     this._timeStamp = 0.0;
     this._groupExpired = false;
     this._priority = 0.0;
+    this._options = undefined;
 };
 
 utils.createPrototypeObject(
@@ -283,7 +284,7 @@ utils.createPrototypeObject(
             subgraph.accept(this._findPagedLODsVisitor);
         },
 
-        requestNodeFile: function(func, url, node, timestamp, priority) {
+        requestNodeFile: function(func, url, node, timestamp, priority, options) {
             // Check if we are currently accepting requests.
             if (!this._acceptNewRequests) return undefined;
             // We don't need to determine if the dbrequest is in the queue
@@ -294,6 +295,7 @@ utils.createPrototypeObject(
             dbrequest._url = url;
             dbrequest._timeStamp = timestamp;
             dbrequest._priority = priority;
+            dbrequest._options = options;
             this._pendingRequests.push(dbrequest);
             return dbrequest;
         },
@@ -332,7 +334,7 @@ utils.createPrototypeObject(
                 });
             } else if (dbrequest._url !== '') {
                 // Load from URL
-                this.loadNodeFromURL(dbrequest._url).then(function(child) {
+                this.loadNodeFromURL(dbrequest._url, dbrequest._options).then(function(child) {
                     that._downloadingRequestsNumber--;
                     dbrequest._loadedModel = child;
                     that._pendingNodes.push(dbrequest);
@@ -350,7 +352,7 @@ utils.createPrototypeObject(
             return P.resolve(promise);
         },
 
-        loadNodeFromURL: function(url) {
+        loadNodeFromURL: function(url, options) {
             var ReaderParser = require('osgDB/readerParser').default;
             // Call to ReaderParser just in case there is a custom readNodeURL Callback
             // See osgDB/options.js and/or osgDB/Input.js
@@ -358,7 +360,7 @@ utils.createPrototypeObject(
             // the parsing. This way several/many request could be done at the same time.
             // Also we should be able to cancel requests, so there is a need to have access
             // to the HTTPRequest Object
-            return ReaderParser.readNodeURL(url);
+            return ReaderParser.readNodeURL(url, options);
         },
 
         releaseGLExpiredSubgraphs: function(availableTime) {
