@@ -52,7 +52,7 @@ utils.createPrototypeObject(
 
             // Set a minimal thresold on pinch event, to be detected after pan
             hammer.get('pinch').set({
-                threshold: 0.1
+                threshold: 0.3
             });
             // Let the pan be detected with two fingers.
             hammer.get('pan').set({
@@ -100,10 +100,10 @@ utils.createPrototypeObject(
             this._nbPointerLast = this._computeTouches(event);
 
             var pos;
-            if (this._nbPointerLast === 2) {
+            if (this._nbPointerLast === 3 || this._nbPointerLast === 2) {
                 pos = manipulator.getPositionRelativeToCanvas(event.center.x, event.center.y);
                 this._lastPos = pos;
-            } else {
+            } else if (this._nbPointerLast === 1) {
                 if (this._lastPos === undefined) {
                     pos = manipulator.getCanvasCenter();
                 } else {
@@ -113,13 +113,13 @@ utils.createPrototypeObject(
 
             manipulator.computeIntersections(pos);
 
-            if (this._nbPointerLast === 2) {
+            if (this._nbPointerLast === 3) {
                 var panInterpolator = manipulator.getPanInterpolator();
                 manipulator.getPanInterpolator().reset();
                 var xPan = event.center.x * this._panFactorX;
                 var yPan = event.center.y * this._panFactorY;
                 panInterpolator.set(xPan, yPan);
-            } else {
+            } else if (this._nbPointerLast === 1) {
                 manipulator.getRotateInterpolator().reset();
             }
         },
@@ -136,17 +136,17 @@ utils.createPrototypeObject(
 
             // prevent sudden big changes in the event.center variables
             if (this._nbPointerLast !== nbPointers) {
-                if (nbPointers === 2) manipulator.getPanInterpolator().reset();
-                else manipulator.getRotateInterpolator().reset();
+                if (nbPointers === 3) manipulator.getPanInterpolator().reset();
+                else if (this._nbPointerLast === 1) manipulator.getRotateInterpolator().reset();
                 this._nbPointerLast = nbPointers;
             }
 
-            if (nbPointers === 2) {
+            if (nbPointers === 3) {
                 var panInterpolator = manipulator.getPanInterpolator();
                 var xPan = event.center.x * this._panFactorX;
                 var yPan = event.center.y * this._panFactorY;
                 panInterpolator.setTarget(xPan, yPan);
-            } else {
+            } else if (this._nbPointerLast === 1) {
                 var rotateInterpolator = manipulator.getRotateInterpolator();
                 var xRot = event.center.x * this._rotateFactorX;
                 var yRot = event.center.y * this._rotateFactorY;
@@ -199,10 +199,7 @@ utils.createPrototypeObject(
                 return;
             }
 
-            // make the dezoom faster
-            var isZoomIn = event.scale > this._lastScale;
-            var zoomFactor = isZoomIn ? this._zoomFactor : this._zoomFactor * 4.0;
-            var scale = (event.scale - this._lastScale) * zoomFactor;
+            var scale = (event.scale - this._lastScale) *  this._zoomFactor;
             this._lastScale = event.scale;
 
             var zoomInterpolator = manipulator.getZoomInterpolator();
