@@ -52,7 +52,7 @@ utils.createPrototypeObject(
 
             // Set a minimal thresold on pinch event, to be detected after pan
             hammer.get('pinch').set({
-                threshold: 0.1
+                threshold: 0.3
             });
             // Let the pan be detected with two fingers.
             hammer.get('pan').set({
@@ -199,10 +199,7 @@ utils.createPrototypeObject(
                 return;
             }
 
-            // make the dezoom faster
-            var isZoomIn = event.scale > this._lastScale;
-            var zoomFactor = isZoomIn ? this._zoomFactor : this._zoomFactor * 4.0;
-            var scale = (event.scale - this._lastScale) * zoomFactor;
+            var scale = (event.scale - this._lastScale) *  this._zoomFactor;
             this._lastScale = event.scale;
 
             var zoomInterpolator = manipulator.getZoomInterpolator();
