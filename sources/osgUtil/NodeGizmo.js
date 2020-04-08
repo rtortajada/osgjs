@@ -13,8 +13,14 @@ import TransformEnums from 'osg/transformEnums';
 import utils from 'osg/utils';
 
 var getCanvasCoord = function(vec, e) {
-    vec[0] = e.offsetX === undefined ? e.layerX : e.offsetX;
-    vec[1] = e.offsetY === undefined ? e.layerY : e.offsetY;
+    if (('ontouchstart' in window || navigator.maxTouchPoints || navigator.msMaxTouchPoints) && window.navigator.userAgent.indexOf('Edge') === -1) {
+        var offset = e.target.getBoundingClientRect();
+        vec[0] = e.changedTouches[ 0 ].clientX - offset.left;
+        vec[1] = e.changedTouches[ 0 ].clientY;
+    } else {
+        vec[0] = e.offsetX === undefined ? e.layerX : e.offsetX;
+        vec[1] = e.offsetY === undefined ? e.layerY : e.offsetY;
+    }
 };
 
 var HideCullCallback = function() {};
@@ -159,6 +165,10 @@ var NodeGizmo = function(viewer) {
     this._iv = new IntersectionVisitor();
     this._iv.setIntersector(this._lsi);
 
+    this._pixelsMargin = 0.0;
+    if (('ontouchstart' in window || navigator.maxTouchPoints || navigator.msMaxTouchPoints) && window.navigator.userAgent.indexOf('Edge') === -1)
+        this._pixelsMargin = 5.0;
+    
     this.init();
 };
 
@@ -253,10 +263,18 @@ utils.createPrototypeNode(
             }
 
             var canvas = this._canvas;
-            canvas.addEventListener('mousemove', this.onMouseMove.bind(this));
-            canvas.addEventListener('mousedown', this.onMouseDown.bind(this));
-            canvas.addEventListener('mouseup', this.onMouseUp.bind(this));
-            canvas.addEventListener('mouseout', this.onMouseUp.bind(this));
+            
+            if (('ontouchstart' in window || navigator.maxTouchPoints || navigator.msMaxTouchPoints) && window.navigator.userAgent.indexOf('Edge') === -1) {
+                canvas.addEventListener( 'touchmove', this.onMouseMove.bind( this ) );
+                canvas.addEventListener( 'touchend', this.onMouseUp.bind( this ) );
+                canvas.addEventListener( 'touchcancel', this.onMouseUp.bind( this ) );
+                canvas.addEventListener( 'touchstart', this.onMouseDown.bind( this ) );
+            } else {
+                canvas.addEventListener('mousemove', this.onMouseMove.bind(this));
+                canvas.addEventListener('mousedown', this.onMouseDown.bind(this));
+                canvas.addEventListener('mouseup', this.onMouseUp.bind(this));
+                canvas.addEventListener('mouseout', this.onMouseUp.bind(this));
+            }
         },
 
         _insertEditNode: function(parent, node) {
@@ -825,8 +843,12 @@ utils.createPrototypeNode(
 
         onMouseDown: function(e) {
             getCanvasCoord(this._downCanvasCoord, e);
-            if (!this._hoverNode || !this._attachedNode) return;
+            // When there is a mouse, the node (arrow, plane or torus) has been hovered due to there has been a mousemove event hover it
+            // So, for touch devices the next lines are necessary
+            if (('ontouchstart' in window || navigator.maxTouchPoints || navigator.msMaxTouchPoints))
+                this.onMouseMove(e);
 
+            if (!this._hoverNode || !this._attachedNode) return;
             e.preventDefault();
 
             this._viewer.setEnableManipulator(false);
@@ -972,19 +994,24 @@ utils.createPrototypeNode(
 
             var v = vec2.create();
             getCanvasCoord(v, e);
-            if (vec2.distance(v, this._downCanvasCoord) === 0.0) this.pickAndSelect(e);
+            if (vec2.distance(v, this._downCanvasCoord) <= this._pixelsMargin) this.pickAndSelect(e);
 
             this._showAngle.setNodeMask(0x0);
             this._isEditing = false;
             if (!this._hoverNode) return;
             this.updateGizmoMask();
+
+            // to deselect the _hoverNode in touch devices
+            if (('ontouchstart' in window || navigator.maxTouchPoints || navigator.msMaxTouchPoints))
+                this.onMouseMove();
         },
 
         onMouseMove: function(e) {
             if (!this._attachedNode) return;
             var hit;
             if (this._isEditing === false) {
-                hit = this.pickGizmo(e, NodeGizmo.PICK_GIZMO);
+                if (e)
+                    hit = this.pickGizmo(e, NodeGizmo.PICK_GIZMO);
                 this.onNodeHovered(hit);
                 return;
             }
