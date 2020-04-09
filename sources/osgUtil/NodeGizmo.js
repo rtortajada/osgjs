@@ -166,7 +166,7 @@ var NodeGizmo = function(viewer) {
     this._iv.setIntersector(this._lsi);
 
     this._pixelsMargin = 0.0;
-    if (('ontouchstart' in window || navigator.maxTouchPoints || navigator.msMaxTouchPoints) && window.navigator.userAgent.indexOf('Edge') === -1)
+    if ('ontouchstart' in window || navigator.maxTouchPoints || navigator.msMaxTouchPoints)
         this._pixelsMargin = 5.0;
     
     this.init();
@@ -845,7 +845,7 @@ utils.createPrototypeNode(
             getCanvasCoord(this._downCanvasCoord, e);
             // When there is a mouse, the node (arrow, plane or torus) has been hovered due to there has been a mousemove event hover it
             // So, for touch devices the next lines are necessary
-            if (('ontouchstart' in window || navigator.maxTouchPoints || navigator.msMaxTouchPoints))
+            if ('ontouchstart' in window || navigator.maxTouchPoints || navigator.msMaxTouchPoints)
                 this.onMouseMove(e);
 
             if (!this._hoverNode || !this._attachedNode) return;
@@ -1002,7 +1002,7 @@ utils.createPrototypeNode(
             this.updateGizmoMask();
 
             // to deselect the _hoverNode in touch devices
-            if (('ontouchstart' in window || navigator.maxTouchPoints || navigator.msMaxTouchPoints))
+            if ('ontouchstart' in window || navigator.maxTouchPoints || navigator.msMaxTouchPoints)
                 this.onMouseMove();
         },
 
